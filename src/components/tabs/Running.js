@@ -130,7 +130,7 @@ const Running = (props) => {
   });
 
   return (
-    <div className="rendercontainer">
+    <div className="renderContainers">
       <div className="header">
         <span className="tabTitle">Running container</span>
         <div className="runByButton">
@@ -149,7 +149,7 @@ const Running = (props) => {
           </button>
         </div>
       </div>
-      <div className="container">{renderRunningList}</div>
+      <div className="containers">{renderRunningList}</div>
     </div>
   );
 };
