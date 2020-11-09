@@ -11,7 +11,8 @@ let state;
  * The amount of seconds to wait before resend notification
  * when container problem has not been addressed
  */
-const RESEND_INTERVAL = 60; // seconds
+const RESEND_INTERVAL = store.notificationFrequency*60; // seconds
+console.log("store.notificationFrequency: ", store.notificationFrequency)
 
 const getTargetStat = (containerObject, notificationSettingType) => {
   if (notificationSettingType === categories.MEMORY)
@@ -198,5 +199,5 @@ export default function start() {
       state.containersList.stoppedList,
       0 // triggering value
     );
-  }, 10000);
+  }, store.monitoringFrequency*60000);
 }

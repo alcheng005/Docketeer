@@ -2,6 +2,8 @@ import * as types from "../constants/actionTypes";
 
 const initialState = {
   phoneNumber: "",
+  notificationFrequency: '',
+  monitoringFrequency: '',
   memoryNotificationList: new Set(),
   cpuNotificationList: new Set(),
   stoppedNotificationList: new Set(),
@@ -15,7 +17,19 @@ export default function (state = initialState, action) {
         phoneNumber: action.payload,
       };
 
-    case types.ADD_MEMORY_NOTIFICATION_SETTING:
+      case types.NOTIFICATION_FREQUENCY:
+        return {
+          ...state,
+          notificationFrequency: action.payload,
+        };
+  
+      case types.MONITORING_FREQUENCY:
+        return {
+            ...state,
+            monitoringFrequency: action.payload,
+        };  
+
+      case types.ADD_MEMORY_NOTIFICATION_SETTING:
       const memoryNotificationList = new Set(action.payload);
       return {
         ...state,

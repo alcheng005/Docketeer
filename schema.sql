@@ -24,9 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS containers (
   id TEXT PRIMARY KEY,
   name TEXT,
-  github_url TEXT,
-  memory_hurdle INTEGER,
-  cpu_hurdle INTEGER
+  github_url TEXT
 );
 
 CREATE TABLE IF NOT EXISTS docker_networks (

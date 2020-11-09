@@ -18,7 +18,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import SendIcon from "@material-ui/icons/Send";
 import VerifiedUserIcon from "@material-ui/icons/VerifiedUser";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import store from '../../renderer/store';
+import { useSelector, useDispatch } from "react-redux";
 
 const mapDispatchToProps = (dispatch) => ({
   addPhoneNumber: (data) => dispatch(actions.addPhoneNumber(data)),
@@ -166,35 +166,11 @@ const Settings = (props) => {
     await ipcRenderer.invoke("verify-number", mobileNumber);
   };
 
-  // const fetchVerificationCode = () => {
-  //   fetch('http://localhost:5000/mobile', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'Application/JSON',
-  //     },
-  //     body: JSON.stringify({
-  //       mobileNumber: tempPhoneNumber,
-  //     }),
-  //   })
-  //     .then((response) => {
-  //       console.log('phone sent to verification: ', tempPhoneNumber);
-
-  //       return response.json();
-  //     })
-  //     .then((data) => {
-  //       console.log('Data from nofication service: ', data);
-  //     })
-  //     .catch((err) =>
-  //       console.log('handlePhoneNumberSubmit fetch ERROR: ', err),
-  //     );
-  // };
-
   // fetch on component mount only because of empty dependency array
   useEffect(() => {
     fetchNotificationSettings();
   }, []);
 
-  // SELECT cs.container_id, metric_name, triggering_value FROM container_settings  as cs INNER JOIN notification_settings as ns ON cs. notification_settings.id = ns.id;
   /**
    * alerts if phone not entered on Test click
    */
@@ -227,6 +203,7 @@ const Settings = (props) => {
   // 2. MAKE SURE THAT IT HAS THE RIGHT FORMAT
   // 3. SEND IT TO DATABASE
   // 4. THEN UPDATE THE STATE
+const notificationState = useSelector((state) => state.notificationList.notificationFrequency);
 const [tempNotifFreq, setTempNotifFreq] = useState('');
 const notificationFrequency = () => {
               // default value for Notification Frequency
@@ -235,23 +212,20 @@ const notificationFrequency = () => {
               if (isNaN(Number(tempNotifFreq))) alert('Please enter notification frequency in numerical format. ex: 15');
               else {
                 if (tempNotifFreq) frequency = tempNotifFreq
-                console.log("notificationFrequency: ", frequency)                                               //DELETE AFTER INTEGRATION TESTS WILL BE PASSED
                   query(
-                    queryType.INSERT_NOTIFICATION_FREQUENCY,    // CHANGE DB QUERY
+                    queryType.INSERT_NOTIFICATION_FREQUENCY,
                     ['admin', , frequency, ,],
                     (err, res) => {
                       if (err) {
                         console.log(`INSERT_NOTIFICATION_FREQUENCY. Error: ${err}`);
                       } else {
                         console.log(`*** Inserted ${res} into users table. ***`);
-                        console.log("global state before state update: ", props.notificationFrequency)          // CHECK HOW THE STATE HAS CHANGED
-                        props.addNotificationFrequency(frequency);                                              // ADDING TO GLOBAL STATE
-                        console.log("global state after state update: ", props.notificationFrequency)           // CHECK HOW THE STATE HAS CHANGED
+                        props.addNotificationFrequency(frequency);
+                        // console.log("global state after state update: ", notificationState)
                       }
                     },
                   );
               }
-              // }
 };
 
 const [tempMonitoringFrequency, setTempMonitoringFrequency] = useState('');
@@ -262,23 +236,20 @@ const monitoringFrequency = () => {
               if (isNaN(Number(tempMonitoringFrequency))) alert('Please enter monitoring frequency in numerical format. ex: 15');
               else {
                 if (tempMonitoringFrequency) frequency = tempMonitoringFrequency
-                console.log("monitoringFrequency: ", frequency)                                             //DELETE AFTER INTEGRATION TESTS WILL BE PASSED
-                query(
-                  queryType.INSERT_MONITORING_FREQUENCY,    // CHANGE DB QUERY
+                 query(
+                  queryType.INSERT_MONITORING_FREQUENCY,
                   ['admin', , , frequency,],
                   (err, res) => {
                     if (err) {
                       console.log(`INSERT_MONITORING_FREQUENCY. Error: ${err}`);
                     } else {
                       console.log(`*** Inserted ${res} into users table. ***`);
-                      console.log("global state before state update: ", props.monitoringFrequency)          // CHECK HOW THE STATE HAS CHANGED
-                      props.addMonitoringFrequency(frequency);                                         // ADDING TO GLOBAL STATE
-                      console.log("global state after state update: ", props.monitoringFrequency)           // CHECK HOW THE STATE HAS CHANGED
+                      props.addMonitoringFrequency(frequency);
+                      // console.log("global state after state update: ", props.monitoringFrequency)           
                     }
                   },
                 );
               }
-              // }
 };
 
   // VERIFICATION OF THE CODE TYPED IN BY USER FROM SMS
@@ -318,7 +289,6 @@ const monitoringFrequency = () => {
   // INSTEAD OF CREATING A NEW STATE IN THE REDUCER CONCATENATED 2 ALREADY EXISTING STATES
   let allContainersList = props.runningList.concat(props.stoppedList)
   const renderAllContainersList = allContainersList.map((container, i) => {
-  //////////////////DISCUSS BEFORE DELETING EVERYTHING FROM THE STATE  
     let isMemorySelected = isSelected(
       props.memoryNotificationList,
       container.ID
@@ -413,19 +383,11 @@ const monitoringFrequency = () => {
           />
         </TableCell>
         <TableCell align="center">
-          {/* <button
-            className="stop-btn"
-            onClick={() =>
-              props.stop(container.ID, props.stopRunningContainer)
-            }
-          >
-            STOP
-          </button> */}
                     <TextField
                 className={classes.textfield}
                 id="textfield"
                 label="Main repository url"
-                helperText="* e.g.: https://github.com/companyRepo/projectRepo"
+                helperText="* e.g.: https://github.com/comRepo/projectRepo"
                 variant="outlined"
                 value={tempMonitoringFrequency}
                   onChange={(e) => {
@@ -448,86 +410,6 @@ const monitoringFrequency = () => {
       </TableRow>
     );
   });
-
-  // TODO: concat runningList with stoppedList if container can have
-  // const renderStoppedList = props.stoppedList.map((container, i) => {
-  //   let isMemorySelected = isSelected(
-  //     props.memoryNotificationList,
-  //     container.cid
-  //   );
-  //   let isCpuSelected = isSelected(props.cpuNotificationList, container.cid);
-  //   let isStoppedSelected = isSelected(
-  //     props.stoppedNotificationList,
-  //     container.cid
-  //   );
-
-  //   return (
-  //     <TableRow key={i}>
-  //       <TableCell>{container.name}</TableCell>
-  //       <TableCell>{container.cid}</TableCell>
-  //       <TableCell>{container.img}</TableCell>
-  //       <TableCell align="center">
-  //         <Checkbox
-  //           onClick={(event) =>
-  //             event.target.checked
-  //               ? handleCheckSetting(
-  //                   container.cid,
-  //                   container.name,
-  //                   categories.MEMORY
-  //                 )
-  //               : handleUnCheckSetting(container.cid, categories.MEMORY)
-  //           }
-  //           role="checkbox"
-  //           key={container.cid}
-  //           checked={isMemorySelected}
-  //         />
-  //       </TableCell>
-  //       <TableCell align="center">
-  //         <Checkbox
-  //           onClick={(event) =>
-  //             event.target.checked
-  //               ? handleCheckSetting(
-  //                   container.cid,
-  //                   container.name,
-  //                   categories.CPU
-  //                 )
-  //               : handleUnCheckSetting(container.cid, categories.CPU)
-  //           }
-  //           role="checkbox"
-  //           key={container.cid}
-  //           checked={isCpuSelected}
-  //         />
-  //       </TableCell>
-  //       <TableCell align="center">
-  //         <Checkbox
-  //           onClick={(event) =>
-  //             event.target.checked
-  //               ? handleCheckSetting(
-  //                   container.cid,
-  //                   container.name,
-  //                   categories.STOPPED
-  //                 )
-  //               : handleUnCheckSetting(container.cid, categories.STOPPED)
-  //           }
-  //           role="checkbox"
-  //           key={container.cid}
-  //           checked={isStoppedSelected}
-  //         />
-  //       </TableCell>
-  //       <TableCell align="center">
-  //         <button
-  //           className="run-btn"
-  //           onClick={() =>
-  //             props.runStopped(container.cid, props.runStoppedContainer, props.refreshRunningContainers)
-  //           }
-  //         >
-  //           RUN
-  //         </button>
-  //       </TableCell>
-  //     </TableRow>
-  //   );
-  // });
-
   return (
     <div className="renderContainers">
       <div className="header">
@@ -669,7 +551,7 @@ const monitoringFrequency = () => {
       <div className="settings-container">
           <p>Allows you to get access to latest GitHub commits in your project repository on "Metrics" tab for selected containers</p>
           <br></br>
-          <p>1. Add GitHub repositories url in Containers settingss table below</p>
+          <p>1. Add GitHub repositories url in Containers settings table below</p>
       </div>
 
 
@@ -698,8 +580,6 @@ const monitoringFrequency = () => {
             </TableHead>
             <TableBody>
               {renderAllContainersList}
-              {/* {renderRunningList} */}
-              {/* {renderStoppedList} */}
             </TableBody>
           </Table>
         </TableContainer>
