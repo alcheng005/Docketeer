@@ -45,9 +45,6 @@ const listsReducer = (state = initialState, action) => {
                 phoneNumber: action.payload,
               };
 
-
-
-
     case types.REMOVE_CONTAINER:
       const removeContainerList = [];
       for (let container of state.stoppedList) {

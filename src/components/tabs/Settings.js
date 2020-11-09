@@ -298,7 +298,7 @@ const monitoringFrequency = () => {
       props.stoppedNotificationList,
       container.ID
     );
-
+      console.log("container.Name: ", container.Name)
     return (
       <TableRow key={i}>
         <TableCell>
@@ -309,7 +309,7 @@ const monitoringFrequency = () => {
         </TableCell>
         <TableCell>{container.img}</TableCell>
         <TableCell align="center">
-          {/* <Checkbox
+          <Checkbox
             onClick={(event) =>
               event.target.checked
                 ? handleCheckSetting(
@@ -322,8 +322,8 @@ const monitoringFrequency = () => {
             role="checkbox"
             key={container.ID}
             checked={isMemorySelected}
-          /> */}
-          <TextField
+          />
+          {/* <TextField
                 className={classes.textfield}
                 id="textfield"
                 label="Attribute value, %"
@@ -335,10 +335,10 @@ const monitoringFrequency = () => {
                     console.log(tempMonitoringFrequency);
                   }}
                   size="small"
-              />
+              /> */}
         </TableCell>
         <TableCell align="center">
-          {/* <Checkbox
+          <Checkbox
             onClick={(event) =>
               event.target.checked
                 ? handleCheckSetting(
@@ -351,8 +351,8 @@ const monitoringFrequency = () => {
             role="checkbox"
             key={container.ID}
             checked={isCpuSelected}
-          /> */}
-                    <TextField
+          />
+                    {/* <TextField
                 className={classes.textfield}
                 id="textfield"
                 label="Hurdle rate, %"
@@ -364,8 +364,8 @@ const monitoringFrequency = () => {
                     console.log(tempMonitoringFrequency);
                   }}
                   size="small"
-              />
-        </TableCell>
+              />*/}
+        </TableCell> 
         <TableCell align="center">
           <Checkbox
             onClick={(event) =>
@@ -540,7 +540,7 @@ const monitoringFrequency = () => {
           </div>
 
           <br></br>
-          <p>3. Setup / update attribute values for notification triggers in Containers settings table below. Recommended values will be used by default </p> 
+          <p>3. Setup / update notification triggers in Containers settings table below </p> 
           <br></br>
 
       </div>
@@ -571,8 +571,8 @@ const monitoringFrequency = () => {
                 <TableCell>Container Name</TableCell>
                 <TableCell>Container ID</TableCell>
                 <TableCell>Image</TableCell>
-                <TableCell align="center">Memory exceeds attribute value</TableCell>
-                <TableCell align="center">CPU exceeds attribute value</TableCell>
+                <TableCell align="center">Memory > 80%</TableCell>
+                <TableCell align="center">CPU > 80%</TableCell>
                 <TableCell align="center">Container Stops</TableCell>
                 <TableCell align="center">GitHub repository url</TableCell>
                 <TableCell align="center">Apply settings</TableCell>
