@@ -8,9 +8,9 @@ describe('notifcationReducer', () => {
   beforeEach(() => {
     startState = {
       phoneNumber: "+15556789",
-      memoryNotificationList: new Set(['a', 'b', 'c']),
-      cpuNotificationList: new Set(['b']),
-      stoppedNotificationList: new Set(['c']),
+      memoryNotificationList: new Set(['411e81584ee7', '79fc579a5b32', '7f421d415b68']),
+      cpuNotificationList: new Set(['79fc579a5b32']),
+      stoppedNotificationList: new Set(['7f421d415b68']),
     };
   });
 
@@ -62,7 +62,7 @@ describe('notifcationReducer', () => {
     beforeEach(() => {
       action = {
         type: 'ADD_MEMORY_NOTIFICATION_SETTING',
-        payload: ['a', 'b', 'c']
+        payload: ['411e81584ee7', '79fc579a5b32', '7f421d415b68']
       };
     });
 
@@ -80,7 +80,7 @@ describe('notifcationReducer', () => {
     beforeEach(() => {
       action = {
         type: 'ADD_CPU_NOTIFICATION_SETTING',
-        payload: ['c']
+        payload: ['7f421d415b68']
       };
     });
 
@@ -98,7 +98,7 @@ describe('notifcationReducer', () => {
     beforeEach(() => {
       action = {
         type: 'ADD_STOPPED_NOTIFICATION_SETTING',
-        payload: ['b']
+        payload: ['79fc579a5b32']
       };
     });
 
@@ -108,9 +108,15 @@ describe('notifcationReducer', () => {
       // assert
       expect(result).toHaveProperty('stoppedNotificationList', new Set(action.payload));
     });
+
+    it('should set empty stopped notification setting Set', () => {
+      // arrange
+      action = {...action, payload: []};
+      // act
+      const result = notificationReducer(startState, action);
+      // assert
+      expect(result).toHaveProperty('stoppedNotificationList', new Set([]));
+    });
   });
 
 })
-
-
-
