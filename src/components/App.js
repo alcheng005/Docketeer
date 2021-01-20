@@ -8,7 +8,7 @@ import Yml from "./tabs/Yml";
 import Containers from "./tabs/Containers";
 import * as helper from "./helper/commands";
 import Docketeer from "../../assets/docketeer-title.png";
-import Settings from "./tabs/Settings";
+import Settings from "./tabs/Settings/Settings";
 import startNotificationRequester from "./helper/notificationsRequester";
 import initDatabase from "./helper/initDatabase";
 
@@ -37,20 +37,6 @@ const App = () => {
   const stoppedList = useSelector((state) => state.containersList.stoppedList);
   const imagesList = useSelector((state) => state.images.imagesList);
   const networkList = useSelector((state) => state.networkList.networkList);
-
-  // map state to props
-  const phoneNumber = useSelector(
-    (state) => state.notificationList.phoneNumber
-  );
-  const memoryNotificationList = useSelector(
-    (state) => state.notificationList.memoryNotificationList
-  );
-  const cpuNotificationList = useSelector(
-    (state) => state.notificationList.cpuNotificationList
-  );
-  const stoppedNotificationList = useSelector(
-    (state) => state.notificationList.stoppedNotificationList
-  );
 
   const [selected, setSelected] = useState("/");
 
@@ -184,19 +170,7 @@ const App = () => {
             />
           </Route>
           <Route path="/">
-            <Settings
-              runningList={runningList}
-              stop={helper.stop}
-              stopRunningContainer={stopRunningContainer}
-              stoppedList={stoppedList}
-              runStopped={helper.runStopped}
-              refreshRunningContainers={refreshRunningContainers}
-              runStoppedContainer={runStoppedContainer}
-              phoneNumber={phoneNumber}
-              memoryNotificationList={memoryNotificationList}
-              cpuNotificationList={cpuNotificationList}
-              stoppedNotificationList={stoppedNotificationList}
-            />
+            <Settings runningList={runningList} stoppedList={stoppedList} />
           </Route>
         </Switch>
       </div>

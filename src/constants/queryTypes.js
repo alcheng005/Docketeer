@@ -38,9 +38,9 @@ export const GET_PHONE_NUMBER = `
 `;
 
 export const GET_CONTAINERS = `
-SELECT *
+SELECT id, name, github_url
 FROM containers;
-`
+`;
 
 export const GET_NOTIFICATION_SETTINGS = `
   SELECT cs.container_id, metric_name, triggering_value
@@ -88,5 +88,5 @@ export const INSERT_GITHUB = `
   VALUES ($1, $2, $3)
   ON CONFLICT ON CONSTRAINT unique_id
   DO
-    UPDATE SET github_url = $3;
+    UPDATE SET github_url = $3, name = $2;
 `;
