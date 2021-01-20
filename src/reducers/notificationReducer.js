@@ -1,7 +1,7 @@
 import * as types from "../constants/actionTypes";
 
 const initialState = {
-  phoneNumber: "",
+  phoneNumber: { mobile: "", isVerified: false },
   memoryNotificationList: new Set(),
   cpuNotificationList: new Set(),
   stoppedNotificationList: new Set(),
@@ -12,7 +12,7 @@ export default function (state = initialState, action) {
     case types.ADD_PHONE_NUMBER:
       return {
         ...state,
-        phoneNumber: action.payload,
+        phoneNumber: { ...action.payload },
       };
 
     case types.ADD_MEMORY_NOTIFICATION_SETTING:

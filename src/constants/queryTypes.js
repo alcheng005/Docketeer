@@ -24,11 +24,11 @@ export const DELETE_NETWORK = `
 `;
 
 export const INSERT_USER = `
-  INSERT INTO users (username, phone_number, notification_frequency, monitoring_frequency)
-  VALUES ($1, $2, $3, $4)
+  INSERT INTO users (username, phone_number, phone_verified, notification_frequency, monitoring_frequency)
+  VALUES ($1, $2, $3, $4, $5)
   ON CONFLICT ON CONSTRAINT unique_username
   DO
-    UPDATE SET phone_number = $2;  
+    UPDATE SET phone_number = $2, phone_verified = $3;  
 `;
 
 export const GET_PHONE_NUMBER = `

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   username TEXT,
   phone_number TEXT,
+  phone_verified BOOLEAN,
   notification_frequency INTEGER,
   monitoring_frequency INTEGER,
   CONSTRAINT unique_username UNIQUE(username)

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { connect, useDispatch, useSelector } from "react-redux";
-import { ipcRenderer } from "electron";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import * as actions from "../../../actions/actions";
 import * as categories from "../../../constants/notificationCategories";
 import query from "../../helper/psqlquery";
@@ -9,11 +8,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import ContainerSettingsTable from "./ContainerSettingsTable";
 import PhoneInput from "./PhoneInput";
 import IntervalInput from "./IntervalInput";
-import SendIcon from "@material-ui/icons/Send";
-import VerifiedUserIcon from "@material-ui/icons/VerifiedUser";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     "& .MuiTextField-root": {
       marginLeft: 5,
@@ -43,24 +39,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // showVerificationInput IS ISED FOR RENDERING THE VERIFICATION CODE COMPONENT
-let showVerificationInput = false;
-let isVerified = false;
 
 const Settings = (props) => {
-  const [mobileNumber, setMobileNumber] = useState("");
-  const classes = useStyles();
-
-  // map state to props
-  const phoneNumber = useSelector(
-    (state) => state.notificationList.phoneNumber
-  );
-
   const dispatch = useDispatch();
-  const addPhoneNumber = (data) => dispatch(actions.addPhoneNumber(data));
-  const addNotificationFrequency = (data) =>
-    dispatch(actions.addNotificationFrequency(data));
-  const addMonitoringFrequency = (data) =>
-    dispatch(actions.addMonitoringFrequency(data));
   const addMemoryNotificationSetting = (data) =>
     dispatch(actions.addMemoryNotificationSetting(data));
   const addCpuNotificationSetting = (data) =>
@@ -136,7 +117,7 @@ const Settings = (props) => {
         let tempCPU = [];
         let tempStopped = [];
 
-        res.rows.forEach((el, i) => {
+        res.rows.forEach((el) => {
           switch (el.metric_name) {
             case categories.MEMORY.toLowerCase():
               tempMemory.push(el.container_id);
@@ -160,119 +141,10 @@ const Settings = (props) => {
     });
   };
 
-  const verifyMobileNumber = async () => {
-    await ipcRenderer.invoke("verify-number", mobileNumber);
-  };
-
   // fetch on component mount only because of empty dependency array
   useEffect(() => {
     fetchNotificationSettings();
   }, []);
-
-  /**
-   * alerts if phone not entered on Test click
-   */
-  const handlePhoneNumberSubmit = () => {
-    if (!mobileNumber) alert("Please enter phone number");
-    else {
-      // alert if input is not a number
-      if (isNaN(Number(mobileNumber)))
-        alert("Please enter phone number in numerical format. ex: 123456789");
-      else {
-        alert(`Phone: ${mobileNumber} is valid`);
-        // ask SMS service for a verification code
-        query(
-          queryType.INSERT_USER,
-          ["admin", mobileNumber, 5, 2],
-          (err, res) => {
-            if (err) {
-              console.log(`Error in insert user. Error: ${err}`);
-            } else {
-              console.log(`*** Inserted ${res} into users table. ***`);
-              props.addPhoneNumber(mobileNumber);
-              showVerificationInput = true;
-              // ask SMS service for a verification code
-              verifyMobileNumber();
-            }
-          }
-        );
-      }
-    }
-  };
-
-  // SAVING USER INPUTS: NOTIFICATION AND MEMORY CYCLE
-  // 1. GET DATA FROM THE FORM
-  // 2. MAKE SURE THAT IT HAS THE RIGHT FORMAT
-  // 3. SEND IT TO DATABASE
-  // 4. THEN UPDATE THE STATE
-  const [tempNotifFreq, setTempNotifFreq] = useState("");
-  const notificationFrequency = () => {
-    // default value for Notification Frequency
-    let frequency = 5;
-    // alert if input is not a number
-    if (isNaN(Number(tempNotifFreq)))
-      alert("Please enter notification frequency in numerical format. ex: 15");
-    else {
-      if (tempNotifFreq) frequency = tempNotifFreq;
-      query(
-        queryType.INSERT_NOTIFICATION_FREQUENCY,
-        ["admin", , frequency, ,],
-        (err, res) => {
-          if (err) {
-            console.log(`INSERT_NOTIFICATION_FREQUENCY. Error: ${err}`);
-          } else {
-            console.log(`*** Inserted ${res} into users table. ***`);
-            props.addNotificationFrequency(frequency);
-          }
-        }
-      );
-    }
-  };
-
-  const [tempMonitoringFrequency, setTempMonitoringFrequency] = useState("");
-  const monitoringFrequency = () => {
-    // default value for Monitoring Frequency
-    let frequency = 2;
-    // alert if input is not a number
-    if (isNaN(Number(tempMonitoringFrequency)))
-      alert("Please enter monitoring frequency in numerical format. ex: 15");
-    else {
-      if (tempMonitoringFrequency) frequency = tempMonitoringFrequency;
-      query(
-        queryType.INSERT_MONITORING_FREQUENCY,
-        ["admin", , , frequency],
-        (err, res) => {
-          if (err) {
-            console.log(`INSERT_MONITORING_FREQUENCY. Error: ${err}`);
-          } else {
-            console.log(`*** Inserted ${res} into users table. ***`);
-            props.addMonitoringFrequency(frequency);
-          }
-        }
-      );
-    }
-  };
-
-  // VERIFICATION OF THE CODE TYPED IN BY USER FROM SMS
-  const [formData, updateFormData] = useState("");
-  const handleChange = (value) => {
-    updateFormData(value);
-  };
-
-  // Verify code
-  const handleSubmit = async () => {
-    const body = {
-      code: formData,
-      mobileNumber: mobileNumber,
-    };
-
-    const result = await ipcRenderer.invoke("verify-code", body);
-
-    if (result === "approved") {
-      showVerificationInput = false;
-      isVerified = result === "approved" ? true : false;
-    } else alert("Please try verification code again");
-  };
 
   /**
    * Checks to see if the containerId is in the array

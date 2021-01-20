@@ -43,7 +43,7 @@ const ContainerSettingsTable = ({ containers }) => {
   // }, []);
 
   const rows = containers.map((container) => {
-    console.log("constructing rows again");
+    // console.log("constructing rows again");
     return (
       <ContainerSettingsRow
         key={container.ID}
