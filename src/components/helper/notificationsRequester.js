@@ -11,23 +11,29 @@ let state;
  * The amount of seconds to wait before resend notification
  * when container problem has not been addressed
  */
-const RESEND_INTERVAL = 60; // seconds
+const RESEND_INTERVAL = 10; // seconds
 
 const getTargetStat = (containerObject, notificationSettingType) => {
   if (notificationSettingType === categories.MEMORY)
-    return parseFloat(containerObject.mp.replace("%", ""));
+    return parseFloat(containerObject.MemPerc.replace("%", ""));
   if (notificationSettingType === categories.CPU)
-    return parseFloat(containerObject.cpu.replace("%", ""));
+    return parseFloat(containerObject.CPUPerc.replace("%", ""));
   if (notificationSettingType === categories.STOPPED) return 1;
 };
 
 const getContainerObject = (containerList, containerId) => {
-  for (let i = 0; i < containerList.length; i += 1) {
-    const containerObject = containerList[i];
-    if (containerObject.cid === containerId) return containerObject;
-  }
-  // container not present in container list (ex: running or stopped notificationList)
-  return undefined;
+  console.log("containerList", containerList, "containerId", containerId);
+  // for (let i = 0; i < containerList.length; i += 1) {
+  //   const containerObject = containerList[i];
+  //   if (containerObject.ID === containerId) return containerObject;
+  // }
+  // // container not present in container list (ex: running or stopped notificationList)
+  // return undefined;
+
+  const resultContainer = containerList.filter(
+    (container) => container.ID === containerId
+  );
+  return resultContainer.length ? resultContainer[0] : undefined;
 };
 
 const isContainerInSentNotifications = (notificationType, containerId) => {
@@ -109,9 +115,11 @@ const checkForNotifications = (
   notificationSettingsSet.forEach((containerId) => {
     // check container metrics if it is seen in either runningList or stoppedList
     const containerObject = getContainerObject(containerList, containerId);
+    console.log("containerObject", containerObject);
     if (containerObject) {
       // gets the stat/metric on the container that we want to test
       const stat = getTargetStat(containerObject, notificationType);
+      console.log("stat", stat, "triggeringValue", triggeringValue);
       // if the stat should trigger rule
       if (stat > triggeringValue) {
         // if the container is in sentNotifications object
@@ -129,13 +137,13 @@ const checkForNotifications = (
 
           // check if enough time (RESEND_INTERVAL) has passed since laster notification sent.
           if (spentTime > RESEND_INTERVAL) {
-            // send nofication
-            sendNotification(
-              notificationType,
-              containerId,
-              stat,
-              triggeringValue
-            );
+            // // send nofication
+            // sendNotification(
+            //   notificationType,
+            //   containerId,
+            //   stat,
+            //   triggeringValue
+            // );
             console.log(
               `** Notification SENT. ${notificationType} containerId: ${containerId} stat: ${stat} triggeringValue: ${triggeringValue} spentTime: ${spentTime}`
             );
@@ -177,6 +185,7 @@ export default function start() {
     // get current state
     state = store.getState();
     // check if any containers register to memory notification exceed triggering memory value
+    console.log("checking memory");
     checkForNotifications(
       state.notificationList.memoryNotificationList,
       categories.MEMORY,
@@ -184,6 +193,7 @@ export default function start() {
       80 // triggering value
     );
     // check if any containers register to cpu notification exceed triggering cpu value
+    console.log("checking cpu");
     checkForNotifications(
       state.notificationList.cpuNotificationList,
       categories.CPU,
@@ -191,6 +201,7 @@ export default function start() {
       80 // triggering value
     );
     // check if any containers register to stopped notification trigger notification
+    console.log("checking stopped");
     checkForNotifications(
       state.notificationList.stoppedNotificationList,
       categories.STOPPED,

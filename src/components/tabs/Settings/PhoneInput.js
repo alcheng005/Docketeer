@@ -105,26 +105,6 @@ const PhoneInput = () => {
     await ipcRenderer.invoke("verify-number", mobileNumber.mobile);
   };
 
-  const saveSettings = () => {
-    // Docker returns Names for stopped containers vs Name for running
-    if (!gitHubURL)
-      alert("Please provide a link in accordance with provided example");
-    if (!container.ID) alert("Please provide a container ID");
-    else {
-      query(
-        queryType.INSERT_GITHUB,
-        [container.ID, container.Names || container.Name, gitHubURL],
-        (err, res) => {
-          if (err) {
-            console.log(`INSERT_GITHUB. Error: ${err}`);
-          } else {
-            console.log(`*** Inserted ${res} into containers table. ***`);
-          }
-        }
-      );
-    }
-  };
-
   const useStyles = makeStyles((theme) => ({
     root: {
       "& .MuiTextField-root": {
