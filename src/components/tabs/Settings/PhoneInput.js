@@ -15,7 +15,7 @@ import { makeStyles } from "@material-ui/core/styles";
 let showVerificationInput = false;
 let isVerified = false;
 
-const PhoneInput = () => {
+const PhoneInput = ({ styles }) => {
   const mobileNumber = useSelector(
     (state) => state.notificationList.phoneNumber
   );
@@ -105,39 +105,15 @@ const PhoneInput = () => {
     await ipcRenderer.invoke("verify-number", mobileNumber.mobile);
   };
 
-  const useStyles = makeStyles((theme) => ({
-    root: {
-      "& .MuiTextField-root": {
-        marginLeft: 5,
-        marginBottom: 15,
-        width: 220,
-        verticalAlign: "middle",
-      },
-    },
-    button: {
-      "& > *": {
-        pointerEvents: "none",
-      },
-    },
-    button: {
-      marginLeft: 5,
-      width: 100,
-      verticalAlign: "top",
-    },
-    verifiedIcon: {
-      verticalAlign: "top",
-      color: "green",
-    },
-    description: {
-      marginLeft: 5,
-      marginBottom: 30,
-    },
-  }));
-  const classes = useStyles();
+  const classes = styles();
 
   return (
     <div>
-      <div>1. Link mobile phone to your account</div>
+      <div className={classes.description}>
+        Register your mobile phone number with our SMS notification service.
+        This will allow you to receive alerts based on the container
+        notification rules you define below.
+      </div>
       <form className={classes.root} autoComplete="off">
         <div>
           <TextField

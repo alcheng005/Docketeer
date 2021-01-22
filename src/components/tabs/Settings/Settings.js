@@ -34,7 +34,7 @@ const useStyles = makeStyles(() => ({
   },
   description: {
     marginLeft: 5,
-    marginBottom: 30,
+    marginBottom: 15,
   },
 }));
 
@@ -347,30 +347,24 @@ const Settings = (props) => {
         <h3>Phone Registration</h3>
       </div>
       <div className="settings-container">
-        <div>
-          Register your mobile phone number with our SMS notification service.
-        </div>
-        <PhoneInput />
+        <PhoneInput styles={useStyles} />
       </div>
 
       <div className="metric-section-title">
         <h3>Monitoring & Notification Frequency</h3>
       </div>
       <div className="settings-container">
-        <p>
-          Allows you to (i) customize the frequency at which we monitor your
-          Docker container stats and (ii), customize the frequency at which we
-          resend a notification for an outstanding container issue.
-        </p>
-        <IntervalInput />
+        <IntervalInput styles={useStyles} />
       </div>
 
       <div className="metric-section-title">
         <h3>Container Settings Table </h3>
       </div>
       <div className="settings-container">
-        <p>Setup the container values that will trigger SMS notifications</p>
-        <ContainerSettingsTable containers={allContainersList} />
+        <ContainerSettingsTable
+          containers={allContainersList}
+          styles={useStyles}
+        />
       </div>
 
       {/* <p>

@@ -7,12 +7,6 @@ import * as categories from "../../constants/notificationCategories";
 const sentNotifications = {};
 let state;
 
-/**
- * The amount of seconds to wait before resend notification
- * when container problem has not been addressed
- */
-const RESEND_INTERVAL = 10; // seconds
-
 const getTargetStat = (containerObject, notificationSettingType) => {
   if (notificationSettingType === categories.MEMORY)
     return parseFloat(containerObject.MemPerc.replace("%", ""));
@@ -22,14 +16,6 @@ const getTargetStat = (containerObject, notificationSettingType) => {
 };
 
 const getContainerObject = (containerList, containerId) => {
-  console.log("containerList", containerList, "containerId", containerId);
-  // for (let i = 0; i < containerList.length; i += 1) {
-  //   const containerObject = containerList[i];
-  //   if (containerObject.ID === containerId) return containerObject;
-  // }
-  // // container not present in container list (ex: running or stopped notificationList)
-  // return undefined;
-
   const resultContainer = containerList.filter(
     (container) => container.ID === containerId
   );
@@ -79,7 +65,7 @@ const sendNotification = async (
 ) => {
   // request notification
   const body = {
-    mobileNumber: state.notificationList.phoneNumber,
+    mobileNumber: state.notificationList.phoneNumber.mobile,
     triggeringEvent: constructNotificationMessage(
       notificationType,
       stat,
@@ -111,6 +97,12 @@ const checkForNotifications = (
   containerList,
   triggeringValue
 ) => {
+  /**
+   * The amount of seconds to wait before resend notification
+   * when container problem has not been addressed
+   */
+  const RESEND_INTERVAL = state.notificationList.notificationFrequency * 60; // seconds
+
   // scan notification settings
   notificationSettingsSet.forEach((containerId) => {
     // check container metrics if it is seen in either runningList or stoppedList
@@ -137,13 +129,13 @@ const checkForNotifications = (
 
           // check if enough time (RESEND_INTERVAL) has passed since laster notification sent.
           if (spentTime > RESEND_INTERVAL) {
-            // // send nofication
-            // sendNotification(
-            //   notificationType,
-            //   containerId,
-            //   stat,
-            //   triggeringValue
-            // );
+            // send nofication
+            sendNotification(
+              notificationType,
+              containerId,
+              stat,
+              triggeringValue
+            );
             console.log(
               `** Notification SENT. ${notificationType} containerId: ${containerId} stat: ${stat} triggeringValue: ${triggeringValue} spentTime: ${spentTime}`
             );
@@ -181,11 +173,11 @@ const checkForNotifications = (
 };
 
 export default function start() {
+  // get current state in order to get default monitoringFrequency
+  state = store.getState();
   setInterval(() => {
-    // get current state
     state = store.getState();
     // check if any containers register to memory notification exceed triggering memory value
-    console.log("checking memory");
     checkForNotifications(
       state.notificationList.memoryNotificationList,
       categories.MEMORY,
@@ -193,7 +185,6 @@ export default function start() {
       80 // triggering value
     );
     // check if any containers register to cpu notification exceed triggering cpu value
-    console.log("checking cpu");
     checkForNotifications(
       state.notificationList.cpuNotificationList,
       categories.CPU,
@@ -201,12 +192,11 @@ export default function start() {
       80 // triggering value
     );
     // check if any containers register to stopped notification trigger notification
-    console.log("checking stopped");
     checkForNotifications(
       state.notificationList.stoppedNotificationList,
       categories.STOPPED,
       state.containersList.stoppedList,
       0 // triggering value
     );
-  }, 10000);
+  }, state.notificationList.monitoringFrequency * 60 * 1000); // milliseconds
 }

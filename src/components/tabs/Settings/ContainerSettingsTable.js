@@ -11,7 +11,7 @@ import ContainerSettingsRow from "./ContainerSettingsRow";
 import query from "../../helper/psqlquery";
 import * as queryType from "../../../constants/queryTypes";
 
-const ContainerSettingsTable = ({ containers }) => {
+const ContainerSettingsTable = ({ containers, styles }) => {
   const memoryNotificationList = useSelector(
     (state) => state.notificationList.memoryNotificationList
   );
@@ -21,6 +21,8 @@ const ContainerSettingsTable = ({ containers }) => {
   const stoppedNotificationList = useSelector(
     (state) => state.notificationList.stoppedNotificationList
   );
+
+  const classes = styles();
 
   // const [gitHubURLs, setGitHubURLs] = useState({});
 
@@ -56,23 +58,30 @@ const ContainerSettingsTable = ({ containers }) => {
   });
 
   return (
-    <TableContainer>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>{"Container Name"}</TableCell>
-            <TableCell>{"Container ID"}</TableCell>
-            <TableCell>{"Image"}</TableCell>
-            <TableCell align="center">{"Memory > 80%"}</TableCell>
-            <TableCell align="center">{"CPU > 80%"}</TableCell>
-            <TableCell align="center">{"Container Stops"}</TableCell>
-            <TableCell align="center">{"GitHub Repository URL"}</TableCell>
-            <TableCell align="center">{"Apply Settings"}</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>{rows}</TableBody>
-      </Table>
-    </TableContainer>
+    <div>
+      <p className={classes.description}>
+        Select the container metric values that should trigger SMS
+        notifications.
+      </p>
+
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>{"Container Name"}</TableCell>
+              <TableCell>{"Container ID"}</TableCell>
+              <TableCell>{"Image"}</TableCell>
+              <TableCell align="center">{"Memory > 80%"}</TableCell>
+              <TableCell align="center">{"CPU > 80%"}</TableCell>
+              <TableCell align="center">{"Container Stops"}</TableCell>
+              <TableCell align="center">{"GitHub Repository URL"}</TableCell>
+              <TableCell align="center">{"Apply Settings"}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>{rows}</TableBody>
+        </Table>
+      </TableContainer>
+    </div>
   );
 };
 

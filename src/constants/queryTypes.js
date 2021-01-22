@@ -68,19 +68,19 @@ export const DELETE_CONTAINER_SETTING = `
 `;
 
 export const INSERT_NOTIFICATION_FREQUENCY = `  
-  INSERT INTO users (username, phone_number, notification_frequency, monitoring_frequency)
-  VALUES ($1, $2, $3, $4)
+  INSERT INTO users (username, notification_frequency)
+  VALUES ($1, $2)
   ON CONFLICT ON CONSTRAINT unique_username
   DO
-    UPDATE SET notification_frequency = $3;  
+    UPDATE SET notification_frequency = $2;  
 `;
 
 export const INSERT_MONITORING_FREQUENCY = `  
-  INSERT INTO users (username, phone_number, notification_frequency, monitoring_frequency)
-  VALUES ($1, $2, $3, $4)
+  INSERT INTO users (username, monitoring_frequency)
+  VALUES ($1, $2)
   ON CONFLICT ON CONSTRAINT unique_username
   DO
-    UPDATE SET monitoring_frequency = $4;  
+    UPDATE SET monitoring_frequency = $2;  
 `;
 
 export const INSERT_GITHUB = `  

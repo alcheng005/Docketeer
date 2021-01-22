@@ -2,6 +2,8 @@ import * as types from "../constants/actionTypes";
 
 const initialState = {
   phoneNumber: { mobile: "", isVerified: false },
+  notificationFrequency: 5,
+  monitoringFrequency: 2,
   memoryNotificationList: new Set(),
   cpuNotificationList: new Set(),
   stoppedNotificationList: new Set(),
@@ -67,6 +69,18 @@ export default function (state = initialState, action) {
       return {
         ...state,
         stoppedNotificationList: newStoppedNotificationList,
+      };
+
+    case types.NOTIFICATION_FREQUENCY:
+      return {
+        ...state,
+        notificationFrequency: action.payload,
+      };
+
+    case types.MONITORING_FREQUENCY:
+      return {
+        ...state,
+        monitoringFrequency: action.payload,
       };
 
     default:
