@@ -2,8 +2,8 @@ import * as types from "../constants/actionTypes";
 
 const initialState = {
   phoneNumber: { mobile: "", isVerified: false },
-  notificationFrequency: 5,
-  monitoringFrequency: 2,
+  notificationFrequency: "",
+  monitoringFrequency: "",
   memoryNotificationList: new Set(),
   cpuNotificationList: new Set(),
   stoppedNotificationList: new Set(),

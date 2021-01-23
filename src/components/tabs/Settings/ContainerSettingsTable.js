@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import Table from "@material-ui/core/Table";
 import TableRow from "@material-ui/core/TableRow";
@@ -8,8 +8,6 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import ContainerSettingsRow from "./ContainerSettingsRow";
-import query from "../../helper/psqlquery";
-import * as queryType from "../../../constants/queryTypes";
 
 const ContainerSettingsTable = ({ containers, styles }) => {
   const memoryNotificationList = useSelector(
@@ -24,28 +22,7 @@ const ContainerSettingsTable = ({ containers, styles }) => {
 
   const classes = styles();
 
-  // const [gitHubURLs, setGitHubURLs] = useState({});
-
-  // const getGitHubURLs = async () => {
-  //   let urls = await query(queryType.GET_CONTAINERS, []);
-  //   if (urls) {
-  //     urls = urls.rows.reduce((obj, container) => {
-  //       obj[container.id] = container.github_url;
-  //       return obj;
-  //     }, {});
-  //   }
-  //   console.log(urls);
-  //   setGitHubURLs(urls || {});
-  // };
-
-  // // get container github urls on load
-  // useEffect(() => {
-  //   // get the github urls
-  //   getGitHubURLs();
-  // }, []);
-
   const rows = containers.map((container) => {
-    // console.log("constructing rows again");
     return (
       <ContainerSettingsRow
         key={container.ID}

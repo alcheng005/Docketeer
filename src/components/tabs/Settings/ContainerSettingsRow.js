@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import query from "../../helper/psqlquery";
+import * as actions from "../../../actions/actions";
 import * as queryType from "../../../constants/queryTypes";
 import * as categories from "../../../constants/notificationCategories";
 import TableRow from "@material-ui/core/TableRow";
@@ -14,21 +16,60 @@ const ContainerSettingsRow = ({
   isMemoryChecked,
   isCpuChecked,
   isStoppedChecked,
-  // gitHubURL,
 }) => {
   const [gitHubURL, setGitHubURL] = useState("");
-  //"https://api.github.com/repos/oslabs-beta/Docketee/commits?"
+
+  const dispatch = useDispatch();
+  const addMemoryNotificationSetting = (data) =>
+    dispatch(actions.addMemoryNotificationSetting(data));
+  const addCpuNotificationSetting = (data) =>
+    dispatch(actions.addCpuNotificationSetting(data));
+  const addStoppedNotificationSetting = (data) =>
+    dispatch(actions.addStoppedNotificationSetting(data));
 
   const getGitHubURL = async () => {
     let url = await query(`select github_url from containers where id = $1`, [
       container.ID,
     ]);
-    console.log(url.rows[0].github_url);
-    setGitHubURL(url.rows[0].github_url || "");
+    setGitHubURL(url.rows[0].github_url);
+  };
+
+  const fetchNotificationSettings = () => {
+    return query(queryType.GET_NOTIFICATION_SETTINGS, [], (err, res) => {
+      if (err) {
+        console.log(`Error getting settings. Error: ${err}`);
+      } else {
+        let tempMemory = [];
+        let tempCPU = [];
+        let tempStopped = [];
+
+        res.rows.forEach((el) => {
+          switch (el.metric_name) {
+            case categories.MEMORY.toLowerCase():
+              tempMemory.push(el.container_id);
+              break;
+            case categories.CPU.toLowerCase():
+              tempCPU.push(el.container_id);
+              break;
+            case categories.STOPPED.toLowerCase():
+              tempStopped.push(el.container_id);
+              break;
+            default:
+              break;
+          }
+        });
+
+        // replace state with new data from database
+        addMemoryNotificationSetting(tempMemory);
+        addCpuNotificationSetting(tempCPU);
+        addStoppedNotificationSetting(tempStopped);
+      }
+    });
   };
 
   useEffect(() => {
     getGitHubURL();
+    fetchNotificationSettings();
   }, []);
 
   const useStyles = makeStyles((theme) => ({
@@ -208,7 +249,6 @@ const ContainerSettingsRow = ({
       <TableCell>
         <Button
           className={classes.button}
-          size="small"
           variant="contained"
           id={`saveBtn-${container.ID}`}
           onClick={() => saveSettings()}

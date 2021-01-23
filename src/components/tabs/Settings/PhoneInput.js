@@ -13,7 +13,6 @@ import { makeStyles } from "@material-ui/core/styles";
 
 // showVerificationInput IS ISED FOR RENDERING THE VERIFICATION CODE COMPONENT
 let showVerificationInput = false;
-let isVerified = false;
 
 const PhoneInput = ({ styles }) => {
   const mobileNumber = useSelector(

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
@@ -20,6 +20,24 @@ const IntervalInput = ({ styles }) => {
     dispatch(actions.addNotificationFrequency(data));
   const addMonitoringFrequency = (data) =>
     dispatch(actions.addMonitoringFrequency(data));
+
+  const getFrequencyValues = async () => {
+    const values = await query(
+      `select monitoring_frequency, notification_frequency from users;`,
+      []
+    );
+
+    addNotificationFrequency(
+      values.rows.length ? values.rows[0].notification_frequency : 5
+    );
+    addMonitoringFrequency(
+      values.rows.length ? values.rows[0].monitoring_frequency : 2
+    );
+  };
+
+  useEffect(() => {
+    getFrequencyValues();
+  }, []);
 
   const classes = styles();
 
@@ -44,8 +62,6 @@ const IntervalInput = ({ styles }) => {
   };
 
   const saveMonitoringFrequency = () => {
-    // default value for Monitoring Frequency
-    let frequency = 2;
     // alert if input is not a number
     if (isNaN(Number(monitoringFrequency)))
       alert("Please enter monitoring frequency in numerical format. ex: 15");
@@ -89,7 +105,6 @@ const IntervalInput = ({ styles }) => {
           />
           <Button
             className={classes.button}
-            size="medium"
             variant="contained"
             onClick={(e) => saveMonitoringFrequency(monitoringFrequency)}
           >
@@ -111,7 +126,6 @@ const IntervalInput = ({ styles }) => {
           />
           <Button
             className={classes.button}
-            size="medium"
             variant="contained"
             onClick={(e) => saveNotificationFrequency(notificationFrequency)}
           >
