@@ -24,11 +24,11 @@ export const DELETE_NETWORK = `
 `;
 
 export const INSERT_USER = `
-  INSERT INTO users (username, phone_number, notification_frequency, monitoring_frequency)
-  VALUES ($1, $2, $3, $4)
+  INSERT INTO users (username, phone_number, phone_verified, notification_frequency, monitoring_frequency)
+  VALUES ($1, $2, $3, $4, $5)
   ON CONFLICT ON CONSTRAINT unique_username
   DO
-    UPDATE SET phone_number = $2;  
+    UPDATE SET phone_number = $2, phone_verified = $3;  
 `;
 
 export const GET_PHONE_NUMBER = `
@@ -38,9 +38,9 @@ export const GET_PHONE_NUMBER = `
 `;
 
 export const GET_CONTAINERS = `
-SELECT *
+SELECT id, name, github_url
 FROM containers;
-`
+`;
 
 export const GET_NOTIFICATION_SETTINGS = `
   SELECT cs.container_id, metric_name, triggering_value
@@ -68,19 +68,19 @@ export const DELETE_CONTAINER_SETTING = `
 `;
 
 export const INSERT_NOTIFICATION_FREQUENCY = `  
-  INSERT INTO users (username, phone_number, notification_frequency, monitoring_frequency)
-  VALUES ($1, $2, $3, $4)
+  INSERT INTO users (username, notification_frequency)
+  VALUES ($1, $2)
   ON CONFLICT ON CONSTRAINT unique_username
   DO
-    UPDATE SET notification_frequency = $3;  
+    UPDATE SET notification_frequency = $2;  
 `;
 
 export const INSERT_MONITORING_FREQUENCY = `  
-  INSERT INTO users (username, phone_number, notification_frequency, monitoring_frequency)
-  VALUES ($1, $2, $3, $4)
+  INSERT INTO users (username, monitoring_frequency)
+  VALUES ($1, $2)
   ON CONFLICT ON CONSTRAINT unique_username
   DO
-    UPDATE SET monitoring_frequency = $4;  
+    UPDATE SET monitoring_frequency = $2;  
 `;
 
 export const INSERT_GITHUB = `  
@@ -88,5 +88,5 @@ export const INSERT_GITHUB = `
   VALUES ($1, $2, $3)
   ON CONFLICT ON CONSTRAINT unique_id
   DO
-    UPDATE SET github_url = $3;
+    UPDATE SET github_url = $3, name = $2;
 `;

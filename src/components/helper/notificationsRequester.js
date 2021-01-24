@@ -2,18 +2,14 @@
 import { ipcRenderer } from "electron";
 import store from "../../renderer/store";
 import * as categories from "../../constants/notificationCategories";
+import query from "./psqlQuery";
 
 // object that holds what notifications have been sent
 const sentNotifications = {};
 let state;
 
-/**
- * The amount of seconds to wait before resend notification
- * when container problem has not been addressed
- */
-const RESEND_INTERVAL = 60; // seconds
-
-const getTargetStat = (containerObject, notificationSettingType) => {
+// Return the container's metric value for the notification type/rule it's registered to
+const getTargetMetric = (containerObject, notificationSettingType) => {
   if (notificationSettingType === categories.MEMORY)
     return parseFloat(containerObject.MemPerc.replace("%", ""));
   if (notificationSettingType === categories.CPU)
@@ -21,15 +17,15 @@ const getTargetStat = (containerObject, notificationSettingType) => {
   if (notificationSettingType === categories.STOPPED) return 1;
 };
 
+// return the containers that have registered for notifications
 const getContainerObject = (containerList, containerId) => {
-  for (let i = 0; i < containerList.length; i += 1) {
-    const containerObject = containerList[i];
-    if (containerObject.ID === containerId) return containerObject;
-  }
-  // container not present in container list (ex: running or stopped notificationList)
-  return undefined;
+  const resultContainer = containerList.filter(
+    (container) => container.ID === containerId
+  );
+  return resultContainer.length ? resultContainer[0] : undefined;
 };
 
+// Is there an existing event for the container. This is needed to resend another notification based on resend interval / monitoring frequency
 const isContainerInSentNotifications = (notificationType, containerId) => {
   if (sentNotifications[notificationType]) {
     // return true if the notificationType key in sentNotification contains our containerId
@@ -74,7 +70,7 @@ const sendNotification = async (
   // request notification
   console.log(`Requesting notification to phoneNumber: ${state.notificationList.phoneNumber}`);
   const body = {
-    mobileNumber: state.notificationList.phoneNumber,
+    mobileNumber: state.notificationList.phoneNumber.mobile,
     triggeringEvent: constructNotificationMessage(
       notificationType,
       stat,
@@ -86,33 +82,31 @@ const sendNotification = async (
   await ipcRenderer.invoke("post-event", body);
 };
 
-/**
- * Returns the DateTime the last notification was sent per notification type, per containerId
- * @param {String} notificationType
- * @param {String} containerId
- */
+// Returns the DateTime the last notification was sent per notification type, per containerId
 const getLatestNotificationDateTime = (notificationType, containerId) =>
   sentNotifications[notificationType][containerId];
 
-/**
- * Checks to see if a notification should be sent based on notification container is subscribed to
- * @param {Set} notificationSettingsSet
- * @param {String} type
- * @param {Array} containerList
- */
+// Checks to see if a notification should be sent based on notification container is subscribed to
 const checkForNotifications = (
   notificationSettingsSet,
   notificationType,
   containerList,
   triggeringValue
 ) => {
+  /**
+   * The amount of seconds to wait before resend notification
+   * when container problem has not been addressed
+   */
+  const RESEND_INTERVAL = state.notificationList.notificationFrequency * 60; // seconds
+
   // scan notification settings
   notificationSettingsSet.forEach((containerId) => {
     // check container metrics if it is seen in either runningList or stoppedList
     const containerObject = getContainerObject(containerList, containerId);
     if (containerObject) {
       // gets the stat/metric on the container that we want to test
-      const stat = getTargetStat(containerObject, notificationType);
+      const stat = getTargetMetric(containerObject, notificationType);
+      console.log("stat", stat, "triggeringValue", triggeringValue);
       // if the stat should trigger rule
       if (stat > triggeringValue) {
         // if the container is in sentNotifications object
@@ -160,6 +154,17 @@ const checkForNotifications = (
           } else {
             sentNotifications[notificationType] = { [containerId]: Date.now() };
           }
+
+          // send nofication
+          sendNotification(
+            notificationType,
+            containerId,
+            stat,
+            triggeringValue
+          );
+          console.log(
+            `** Notification SENT. ${notificationType} containerId: ${containerId} stat: ${stat} triggeringValue: ${triggeringValue}`
+          );
         }
       } else {
         // since metric is under threshold, remove container from sentNotifications if present
@@ -172,30 +177,44 @@ const checkForNotifications = (
   });
 };
 
-export default function start() {
+const getMonitoringFrequency = async () => {
+  const result = await query("select monitoring_frequency from users;");
+  return result.rows[0].monitoring_frequency;
+};
+
+// function to start monitoring containers for metric thresholds
+export default async function start() {
+  // get current state in order to get default monitoringFrequency
+  state = store.getState();
+
+  // get monitoring interval from DB
+  const monitoringFrequency = await getMonitoringFrequency();
+
+  // set interval based on user provided monitoring frequency/interval
   setInterval(() => {
-    // get current state
     state = store.getState();
-    // check if any containers register to memory notification exceed triggering memory value
-    checkForNotifications(
-      state.notificationList.memoryNotificationList,
-      categories.MEMORY,
-      state.containersList.runningList,
-      80 // triggering value
-    );
-    // check if any containers register to cpu notification exceed triggering cpu value
-    checkForNotifications(
-      state.notificationList.cpuNotificationList,
-      categories.CPU,
-      state.containersList.runningList,
-      80 // triggering value
-    );
-    // check if any containers register to stopped notification trigger notification
-    checkForNotifications(
-      state.notificationList.stoppedNotificationList,
-      categories.STOPPED,
-      state.containersList.stoppedList,
-      0 // triggering value
-    );
-  }, 10000);
+    if (state.notificationList.phoneNumber.isVerified) {
+      // check if any containers register to memory notification exceed triggering memory value
+      checkForNotifications(
+        state.notificationList.memoryNotificationList,
+        categories.MEMORY,
+        state.containersList.runningList,
+        80 // triggering value
+      );
+      // check if any containers register to cpu notification exceed triggering cpu value
+      checkForNotifications(
+        state.notificationList.cpuNotificationList,
+        categories.CPU,
+        state.containersList.runningList,
+        80 // triggering value
+      );
+      // check if any containers register to stopped notification trigger notification
+      checkForNotifications(
+        state.notificationList.stoppedNotificationList,
+        categories.STOPPED,
+        state.containersList.stoppedList,
+        0 // triggering value
+      );
+    }
+  }, monitoringFrequency * 60 * 1000); // milliseconds
 }
