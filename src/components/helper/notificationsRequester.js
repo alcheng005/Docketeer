@@ -66,8 +66,9 @@ const sendNotification = async (
   containerId,
   stat,
   triggeringValue
-) => {
+) => {  
   // request notification
+  console.log(`Requesting notification to phoneNumber: ${state.notificationList.phoneNumber}`);
   const body = {
     mobileNumber: state.notificationList.phoneNumber.mobile,
     triggeringEvent: constructNotificationMessage(
@@ -76,7 +77,7 @@ const sendNotification = async (
       triggeringValue,
       containerId
     ),
-  };
+  };  
 
   await ipcRenderer.invoke("post-event", body);
 };
@@ -129,28 +130,31 @@ const checkForNotifications = (
               containerId,
               stat,
               triggeringValue
-            );
-            console.log(
-              `** Notification SENT. ${notificationType} containerId: ${containerId} stat: ${stat} triggeringValue: ${triggeringValue} spentTime: ${spentTime}`
-            );
-            console.log("sentNofications: ", sentNotifications);
+            );           
 
             // update date.now in object that stores sent notifications
             sentNotifications[notificationType][containerId] = Date.now();
           } else {
             // resend interval not yet met
             console.log(
-              `** Resend Interval Not Met. ${notificationType} is at ${stat}.\nLast sent notification time: ${notificationLastSent}`
+              `** Resend Interval Not Met. Resending notification in ${RESEND_INTERVAL - spentTime}\nLast sent notification time: ${notificationLastSent}`
             );
           }
         } else {
           // Container not in sentNotifications.
           // Add it with time as now and send notification.
+          sendNotification(
+            notificationType,
+            containerId,
+            stat,
+            triggeringValue
+          );
           if (sentNotifications[notificationType]) {
             sentNotifications[notificationType][containerId] = Date.now();
           } else {
             sentNotifications[notificationType] = { [containerId]: Date.now() };
           }
+
           // send nofication
           sendNotification(
             notificationType,
